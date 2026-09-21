@@ -2,7 +2,7 @@ repositories:
     robot_rbvogui_common:
         type: git
         url: https://github.com/jfrascon/robot_rbvogui_common.git
-        version: 2a376fbd9c2f86dab875a67762424d078806342c
+        version: d81f491e13ebd0996ac219c92fb5b9b66e792e36
     joint_position_controller_server:
         type: git
         url: https://github.com/jfrascon/joint_position_controller_server.git
