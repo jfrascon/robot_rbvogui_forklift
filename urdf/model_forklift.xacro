@@ -1,0 +1,495 @@
+<?xml version="1.0"?>
+<!--
+  This file publishes the `forklift` model of the `robot_rbvogui_forklift` package.
+  The robot name inside the URDF stays `rbvogui_forklift`.
+
+  This model extends the common RB-VOGUI platform with the forklift module.
+  The forklift module contains:
+  - A simple fork.
+  - A realsense d435 camera (rgbd) mounted on the fork.
+  - A Livox Mid-360 lidar mounted on the back of the basket.
+  - A Livox Mid-360 lidar mounted on the front of the basket.
+  - A front bottom lidar mounted on the robot body.
+-->
+<robot name="rbvogui_forklift" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- ===================================================================== -->
+  <!-- INCLUDES -->
+  <!-- ===================================================================== -->
+
+  <xacro:include filename="$(find robot_rbvogui_common)/urdf/common.xacro"/>
+
+  <!-- This module extends the common RB-VOGUI platform with the forklift and its sensor layout. -->
+  <xacro:include filename="$(find robotics_description)/urdf/sensors/all_sensors_macro.xacro"/>
+  <xacro:include filename="$(find robot_rbvogui_common)/urdf/basket/basket_macros.xacro"/>
+  <xacro:include filename="$(find robotics_description)/urdf/extras/forks/fork_mockup/fork_mockup_macro.xacro"/>
+  <xacro:include filename="$(find robotics_description)/urdf/extras/forks/gz_plugins/plugin_fork_joint_f64_pos_velcmd_macro.xacro"/>
+
+  <!-- ===================================================================== -->
+  <!-- ARGS -->
+  <!-- ===================================================================== -->
+  <!-- Joint limits: lower upper velocity effort. -->
+  <xacro:arg name="fork_limits" default="-0.005 0.2 0.04 20000.0"/>
+  <!-- Joint dynamics: damping friction. -->
+  <xacro:arg name="fork_dynamics" default="10.0 1.0"/>
+
+  <!-- Arguments for the front top Livox Mid-360 mounted on the basket. -->
+  <xacro:arg name="front_top_lidar_use_visual"         default="True"/>
+  <xacro:arg name="front_top_lidar_use_collision"      default="True"/>
+  <xacro:arg name="front_top_lidar_use_inertial"       default="True"/>
+  <xacro:arg name="front_top_lidar_use_v_mesh"         default="True"/>
+  <xacro:arg name="front_top_lidar_v_mesh_use_low_res" default="True"/>
+  <xacro:arg name="front_top_lidar_color"              default=""/>
+  <!-- Use shape instead of mesh for collision by default. -->
+  <xacro:arg name="front_top_lidar_use_c_mesh"         default="False"/>
+  <xacro:arg name="front_top_lidar_c_mesh_use_low_res" default="True"/>
+
+  <!-- Arguments for the front bottom Sick S300 mounted on the robot's body -->
+  <xacro:arg name="front_bottom_lidar_use_visual"         default="True"/>
+  <xacro:arg name="front_bottom_lidar_use_collision"      default="True"/>
+  <xacro:arg name="front_bottom_lidar_use_inertial"       default="True"/>
+  <xacro:arg name="front_bottom_lidar_use_v_mesh"         default="True"/>
+  <xacro:arg name="front_bottom_lidar_v_mesh_use_low_res" default="True"/>
+  <xacro:arg name="front_bottom_lidar_color"              default="0 0 0 1"/>
+  <!-- Use shape instead of mesh for collision by default. -->
+  <xacro:arg name="front_bottom_lidar_use_c_mesh"         default="False"/>
+  <xacro:arg name="front_bottom_lidar_c_mesh_use_low_res" default="True"/>
+  <xacro:arg name="front_bottom_lidar_ground_clearance"   default="0.1"/>
+
+  <!-- Arguments for the back top Livox Mid-360 mounted on the basket. -->
+  <xacro:arg name="back_top_lidar_use_visual"         default="True"/>
+  <xacro:arg name="back_top_lidar_use_collision"      default="True"/>
+  <xacro:arg name="back_top_lidar_use_inertial"       default="True"/>
+  <xacro:arg name="back_top_lidar_use_v_mesh"         default="True"/>
+  <xacro:arg name="back_top_lidar_v_mesh_use_low_res" default="True"/>
+  <xacro:arg name="back_top_lidar_color"              default=""/>
+  <!-- Use shape instead of mesh for collision by default. -->
+  <xacro:arg name="back_top_lidar_use_c_mesh"         default="False"/>
+  <xacro:arg name="back_top_lidar_c_mesh_use_low_res" default="True"/>
+
+  <!-- ===================================================================== -->
+  <!-- XACRO:ARGS ARE CONVERTED TO XACRO:PROPERTIES FOR EASY MANIPULATION -->
+  <!-- ===================================================================== -->
+
+  <!-- ===================================================================== -->
+  <!-- BASKET -->
+  <!-- ===================================================================== -->
+
+  <!--
+  The basket mesh frame is at the center of its lower face. This offset preserves the previous
+  basket position relative to chassis_link.
+  -->
+  <xacro:property name="basket_joint_origin" value="0.027732 0 0.2445 0 0 0"/>
+
+  <xacro:basket_sensors
+      prefix="${robot_prefix}"
+      parent="${robot_prefix}chassis_link"
+      joint_parent_fr_basket_fr="${basket_joint_origin}"/>
+
+  <!-- ===================================================================== -->
+  <!-- FORK MOCKUP -->
+  <!-- ===================================================================== -->
+
+  <xacro:property name="fork_rest_clearance" value="0.026"/>
+  <xacro:property name="fork_limits"         value="$(arg fork_limits)"/>
+  <xacro:property name="fork_dynamics"       value="$(arg fork_dynamics)"/>
+  <xacro:property name="fork_limits_seq"     value="${fork_limits.split()}"/>
+
+  <xacro:if value="${len(fork_limits_seq) != 4}">
+    ${xacro.fatal("xacro arg fork_limits must contain exactly 4 values: lower upper velocity effort")}
+  </xacro:if>
+
+  <xacro:property name="fork_lower_limit" value="${float(fork_limits_seq[0])}"/>
+
+  <xacro:if value="${python.abs(fork_lower_limit) > fork_rest_clearance}">
+    ${xacro.fatal("xacro arg fork_limits lower value exceeds fork_rest_clearance")}
+  </xacro:if>
+
+  <!--
+  x = chassis_joint_origin.x + basket_joint_origin.x + basket.x_max + offset =
+    = -0.012 + 0.027732 + 0.512110 + (0.051 + 0.04) = 0.618842
+  -->
+  <xacro:property name="fork_joint_origin_x" value="0.618842"/>
+
+  <!--
+  base_link is 0.1165 m above the floor.
+  In the rest position, the bottom of the fork is 'fork_rest_clearance' above the floor.
+  z = -0.1165 + fork_rest_clearance
+-0.0905
+  -->
+  <xacro:property name="fork_joint_origin_z" value="${-0.1165 + fork_rest_clearance}"/>
+
+  <xacro:fork_mockup prefix="${robot_prefix}"
+                     parent="${robot_prefix}${base_name}_link"
+                     limits="${fork_limits}"
+                     dynamics="${fork_dynamics}"
+                     joint_parent_fr_fork_mockup_fr="${fork_joint_origin_x} 0 ${fork_joint_origin_z} 0 0 0"/>
+
+  <!--
+  Temporary: retain the fork camera definition for removal during the next cleanup.
+  The false guard keeps camera links and plugins out of the current robot model.
+  -->
+  <xacro:if value="${False}">
+    <!-- ===================================================================== -->
+    <!-- REALSENSE D435 ON THE FORK -->
+    <!-- ===================================================================== -->
+
+    <xacro:property name="fork_rgbd_use_visual"    value="True"/>
+    <xacro:property name="fork_rgbd_use_collision" value="True"/>
+    <xacro:property name="fork_rgbd_use_inertial"  value="True"/>
+    <xacro:property name="fork_rgbd_use_v_mesh"    value="True"/>
+    <xacro:property name="fork_rgbd_color"         value="0.5 0.5 0.5 1.0"/>
+    <xacro:property name="fork_rgbd_use_c_mesh"    value="False"/>
+
+    <!--
+    In a physical RealSense D435, depth is estimated from the stereo pair captured by the two
+    infrared cameras.
+    In this simulation model, the color and depth streams are generated by a single 'rgbd_camera'
+    Gazebo plugin, while the two infrared streams are generated by two separate 'camera' Gazebo
+    plugins.
+    This means, the frame from which the image and depth_image topics are published is the same, and
+    it is different from the frames of the two infrared cameras.
+    The frame specified in the published messages is `depth_frame`.
+    The shared optical frame for the color and depth streams is the `depth_optical_frame`.
+    -->
+    <xacro:property name="fork_camera_rgbd_sim_cfg"   value="${sim_cfg.get('fork_camera_rgbd', dict())}"/>
+    <xacro:property name="fork_camera_infra1_sim_cfg" value="${sim_cfg.get('fork_camera_infra1', dict())}"/>
+    <xacro:property name="fork_camera_infra2_sim_cfg" value="${sim_cfg.get('fork_camera_infra2', dict())}"/>
+
+    <!-- Set properties for the `rgbd_camera` Gazebo plugin associated to the fork camera. -->
+    <xacro:set_props_plugin_camera_rgbd prop_prefix="fork_camera_rgbd_sim"
+                                        sim_cfg="${fork_camera_rgbd_sim_cfg}"/>
+
+    <!--
+    Set properties for the first infrared Gazebo plugin in the fork camera.
+    -->
+    <xacro:set_props_plugin_camera prop_prefix="fork_camera_infra1_sim"
+                                   sim_cfg="${fork_camera_infra1_sim_cfg}"/>
+
+    <!--
+    Set properties for the second infrared Gazebo plugin in the fork camera.
+    -->
+    <xacro:set_props_plugin_camera prop_prefix="fork_camera_infra2_sim"
+                                   sim_cfg="${fork_camera_infra2_sim_cfg}"/>
+
+    <!--
+    This camera is mounted on `${robot_prefix}fork_root_link`.
+    The root frame for the realsense_d435 camera is ${prefix}${name}_bottom_screw_frame.
+    The frame of the mesh is located at its center.
+    Sizes of the mesh are: (size_x = 0.025053 m, size_y = 0.089909 m, size_z = 0.025000 m)
+    The mesh frame is located relative to ${prefix}${name}_bottom_screw_frame at
+    (x = 0.002375 m, y = 0 m, z = 0.0125 m, R = 0 rad, P = 0 rad, Y = 0 rad).
+    The bottom face of the mesh is touching the root frame of the camera.
+    Therefore
+      x_min = 0.002375 - (0.025053/2) m = -0.0101515 m.
+      x_max = 0.002375 + (0.025053/2) m = 0.0148995 m.
+    -->
+    <xacro:property name="fork_rgbd_mount_x" value="${-0.0148995 - 0.01}"/>
+    <xacro:property name="fork_rgbd_mount_y" value="0"/>
+    <xacro:property name="fork_rgbd_mount_z" value="0"/>
+
+    <xacro:realsense_d435_rgbd name="fork_camera"
+                               prefix="${robot_prefix}"
+                               namespace="${robot_namespace}"
+                               parent_frame="${robot_prefix}fork_root_link"
+                               use_visual="${fork_rgbd_use_visual}"
+                               use_collision="${fork_rgbd_use_collision}"
+                               use_inertial="${fork_rgbd_use_inertial}"
+                               use_v_mesh="${fork_rgbd_use_v_mesh}"
+                               color="${fork_rgbd_color}"
+                               use_c_mesh="${fork_rgbd_use_c_mesh}"
+                               joint_parent_fr_root_fr="${fork_rgbd_mount_x} ${fork_rgbd_mount_y} ${fork_rgbd_mount_z} 0 0 0"
+                               use_sensor_frames_and_joints="True"
+                               sim_rgbd_enabled="${fork_camera_rgbd_sim_enabled}"
+                               sim_rgbd_use_gravity="${fork_camera_rgbd_sim_use_gravity}"
+                               sim_rgbd_always_on="${fork_camera_rgbd_sim_always_on}"
+                               sim_rgbd_visualize="${fork_camera_rgbd_sim_visualize}"
+                               sim_rgbd_enable_metrics="${fork_camera_rgbd_sim_enable_metrics}"
+                               sim_rgbd_save="${fork_camera_rgbd_sim_save}"
+                               sim_rgbd_triggered="${fork_camera_rgbd_sim_triggered}"
+                               sim_rgbd_visible_mask="${fork_camera_rgbd_sim_visible_mask}"
+                               sim_rgbd_clip="${fork_camera_rgbd_sim_clip}"
+                               sim_rgbd_depth_clip="${fork_camera_rgbd_sim_depth_clip}"
+                               sim_rgbd_update_rate="${fork_camera_rgbd_sim_update_rate}"
+                               sim_rgbd_image="${fork_camera_rgbd_sim_image}"
+                               sim_rgbd_lens_single_elements="${fork_camera_rgbd_sim_lens_single_elements}"
+                               sim_rgbd_lens_custom_function="${fork_camera_rgbd_sim_lens_custom_function}"
+                               sim_rgbd_lens_intrinsics="${fork_camera_rgbd_sim_lens_intrinsics}"
+                               sim_rgbd_lens_xy_skew="${fork_camera_rgbd_sim_lens_xy_skew}"
+                               sim_rgbd_lens_projection="${fork_camera_rgbd_sim_lens_projection}"
+                               sim_rgbd_distortion_k_p="${fork_camera_rgbd_sim_distortion_k_p}"
+                               sim_rgbd_distortion_center="${fork_camera_rgbd_sim_distortion_center}"
+                               sim_rgbd_gaussian_noise="${fork_camera_rgbd_sim_gaussian_noise}"
+                               sim_infra1_enabled="${fork_camera_infra1_sim_enabled}"
+                               sim_infra1_use_gravity="${fork_camera_infra1_sim_use_gravity}"
+                               sim_infra1_always_on="${fork_camera_infra1_sim_always_on}"
+                               sim_infra1_visualize="${fork_camera_infra1_sim_visualize}"
+                               sim_infra1_enable_metrics="${fork_camera_infra1_sim_enable_metrics}"
+                               sim_infra1_save="${fork_camera_infra1_sim_save}"
+                               sim_infra1_triggered="${fork_camera_infra1_sim_triggered}"
+                               sim_infra1_visible_mask="${fork_camera_infra1_sim_visible_mask}"
+                               sim_infra1_clip="${fork_camera_infra1_sim_clip}"
+                               sim_infra1_update_rate="${fork_camera_infra1_sim_update_rate}"
+                               sim_infra1_image="${fork_camera_infra1_sim_image}"
+                               sim_infra1_lens_single_elements="${fork_camera_infra1_sim_lens_single_elements}"
+                               sim_infra1_lens_custom_function="${fork_camera_infra1_sim_lens_custom_function}"
+                               sim_infra1_lens_intrinsics="${fork_camera_infra1_sim_lens_intrinsics}"
+                               sim_infra1_lens_xy_skew="${fork_camera_infra1_sim_lens_xy_skew}"
+                               sim_infra1_lens_projection="${fork_camera_infra1_sim_lens_projection}"
+                               sim_infra1_distortion_k_p="${fork_camera_infra1_sim_distortion_k_p}"
+                               sim_infra1_distortion_center="${fork_camera_infra1_sim_distortion_center}"
+                               sim_infra1_gaussian_noise="${fork_camera_infra1_sim_gaussian_noise}"
+                               sim_infra2_enabled="${fork_camera_infra2_sim_enabled}"
+                               sim_infra2_use_gravity="${fork_camera_infra2_sim_use_gravity}"
+                               sim_infra2_always_on="${fork_camera_infra2_sim_always_on}"
+                               sim_infra2_visualize="${fork_camera_infra2_sim_visualize}"
+                               sim_infra2_enable_metrics="${fork_camera_infra2_sim_enable_metrics}"
+                               sim_infra2_save="${fork_camera_infra2_sim_save}"
+                               sim_infra2_triggered="${fork_camera_infra2_sim_triggered}"
+                               sim_infra2_visible_mask="${fork_camera_infra2_sim_visible_mask}"
+                               sim_infra2_clip="${fork_camera_infra2_sim_clip}"
+                               sim_infra2_update_rate="${fork_camera_infra2_sim_update_rate}"
+                               sim_infra2_image="${fork_camera_infra2_sim_image}"
+                               sim_infra2_lens_single_elements="${fork_camera_infra2_sim_lens_single_elements}"
+                               sim_infra2_lens_custom_function="${fork_camera_infra2_sim_lens_custom_function}"
+                               sim_infra2_lens_intrinsics="${fork_camera_infra2_sim_lens_intrinsics}"
+                               sim_infra2_lens_xy_skew="${fork_camera_infra2_sim_lens_xy_skew}"
+                               sim_infra2_lens_projection="${fork_camera_infra2_sim_lens_projection}"
+                               sim_infra2_distortion_k_p="${fork_camera_infra2_sim_distortion_k_p}"
+                               sim_infra2_distortion_center="${fork_camera_infra2_sim_distortion_center}"
+                               sim_infra2_gaussian_noise="${fork_camera_infra2_sim_gaussian_noise}"
+                               sim_rgbd_base_topic="${fork_camera_rgbd_sim_base_topic}"
+                               sim_rgbd_trigger_topic="${fork_camera_rgbd_sim_trigger_topic}"
+                               sim_infra1_image_topic="${fork_camera_infra1_sim_topic}"
+                               sim_infra1_camera_info_topic="${fork_camera_infra1_sim_info_topic}"
+                               sim_infra1_trigger_topic="${fork_camera_infra1_sim_trigger_topic}"
+                               sim_infra2_image_topic="${fork_camera_infra2_sim_topic}"
+                               sim_infra2_camera_info_topic="${fork_camera_infra2_sim_info_topic}"
+                               sim_infra2_trigger_topic="${fork_camera_infra2_sim_trigger_topic}"/>
+
+
+  </xacro:if>
+  <!-- ===================================================================== -->
+  <!-- FRONT TOP LIVOX MID-360 -->
+  <!-- ===================================================================== -->
+
+  <xacro:property name="front_top_lidar_use_visual"         value="$(arg front_top_lidar_use_visual)"/>
+  <xacro:property name="front_top_lidar_use_collision"      value="$(arg front_top_lidar_use_collision)"/>
+  <xacro:property name="front_top_lidar_use_inertial"       value="$(arg front_top_lidar_use_inertial)"/>
+  <xacro:property name="front_top_lidar_use_v_mesh"         value="$(arg front_top_lidar_use_v_mesh)"/>
+  <xacro:property name="front_top_lidar_v_mesh_use_low_res" value="$(arg front_top_lidar_v_mesh_use_low_res)"/>
+  <xacro:property name="front_top_lidar_color"              value="$(arg front_top_lidar_color)"/>
+  <xacro:property name="front_top_lidar_use_c_mesh"         value="$(arg front_top_lidar_use_c_mesh)"/>
+  <xacro:property name="front_top_lidar_c_mesh_use_low_res" value="$(arg front_top_lidar_c_mesh_use_low_res)"/>
+  <xacro:property name="front_top_lidar_sim_cfg"            value="${sim_cfg.get('front_top_lidar', dict())}"/>
+
+  <!--
+  front_top_lidar_sim_cfg contains the simulation configuration for the Livox Mid-360 lidar plugin.
+  -->
+  <xacro:set_props_plugin_lidar_3d_ring prop_prefix="front_top_lidar_sim"
+                                        sim_cfg="${front_top_lidar_sim_cfg}"/>
+
+  <!-- The top Livox Mid-360 poses are expressed relative to the basket link. -->
+  <xacro:property name="front_top_lidar_joint_parent_fr_root_fr"
+                  value="0.4882 0.0 0.1952 0.0 ${pi / 6.0} 0.0"/>
+
+  <xacro:livox_mid360
+      name="front_top_lidar"
+      prefix="${robot_prefix}"
+      parent_frame="${robot_prefix}basket_root_link"
+      use_visual="${front_top_lidar_use_visual}"
+      use_collision="${front_top_lidar_use_collision}"
+      use_inertial="${front_top_lidar_use_inertial}"
+      use_v_mesh="${front_top_lidar_use_v_mesh}"
+      v_mesh_use_low_res="${front_top_lidar_v_mesh_use_low_res}"
+      color="${front_top_lidar_color}"
+      use_c_mesh="${front_top_lidar_use_c_mesh}"
+      c_mesh_use_low_res="${front_top_lidar_c_mesh_use_low_res}"
+      joint_parent_fr_root_fr="${front_top_lidar_joint_parent_fr_root_fr}"
+      sim_enabled="${front_top_lidar_sim_enabled}"
+      sim_always_on="${front_top_lidar_sim_always_on}"
+      sim_visualize="${front_top_lidar_sim_visualize}"
+      sim_update_rate="${front_top_lidar_sim_update_rate}"
+      sim_hor_fov_deg="${front_top_lidar_sim_hor_fov_deg}"
+      sim_hor_res_deg="${front_top_lidar_sim_hor_res_deg}"
+      sim_ver_fov_deg="${front_top_lidar_sim_ver_fov_deg}"
+      sim_ver_res_deg="${front_top_lidar_sim_ver_res_deg}"
+      sim_dist_span="${front_top_lidar_sim_dist_span}"
+      sim_dist_res="${front_top_lidar_sim_dist_res}"
+      sim_gaussian_noise="${front_top_lidar_sim_gaussian_noise}"
+      namespace="${robot_namespace}"
+      sim_base_topic="${front_top_lidar_sim_base_topic}"/>
+
+  <!-- ===================================================================== -->
+  <!-- FRONT BOTTOM SICK S300 -->
+  <!-- ===================================================================== -->
+
+  <xacro:property name="front_bottom_lidar_use_visual"         value="$(arg front_bottom_lidar_use_visual)"/>
+  <xacro:property name="front_bottom_lidar_use_collision"      value="$(arg front_bottom_lidar_use_collision)"/>
+  <xacro:property name="front_bottom_lidar_use_inertial"       value="$(arg front_bottom_lidar_use_inertial)"/>
+  <xacro:property name="front_bottom_lidar_use_v_mesh"         value="$(arg front_bottom_lidar_use_v_mesh)"/>
+  <xacro:property name="front_bottom_lidar_v_mesh_use_low_res" value="$(arg front_bottom_lidar_v_mesh_use_low_res)"/>
+  <xacro:property name="front_bottom_lidar_color"              value="$(arg front_bottom_lidar_color)"/>
+  <xacro:property name="front_bottom_lidar_use_c_mesh"         value="$(arg front_bottom_lidar_use_c_mesh)"/>
+  <xacro:property name="front_bottom_lidar_c_mesh_use_low_res" value="$(arg front_bottom_lidar_c_mesh_use_low_res)"/>
+  <xacro:property name="front_bottom_lidar_ground_clearance"   value="$(arg front_bottom_lidar_ground_clearance)"/>
+
+  <xacro:property name="front_bottom_lidar_sim_cfg"            value="${sim_cfg.get('front_bottom_lidar', dict())}"/>
+
+  <xacro:set_props_plugin_lidar_2d prop_prefix="front_bottom_lidar_sim"
+                                   sim_cfg="${front_bottom_lidar_sim_cfg}"/>
+
+  <xacro:property name="front_bottom_lidar_size_x" value="0.106"/>
+  <xacro:property name="front_bottom_lidar_size_z" value="0.152"/>
+
+  <xacro:property name="front_bottom_lidar_joint_parent_fr_root_fr"
+                  value="${0.5 * (top_body_size_x - front_bottom_lidar_size_x)}
+                         0.0
+                         ${-ground_clearance + front_bottom_lidar_size_z + front_bottom_lidar_ground_clearance}
+                         ${pi}
+                         0.0
+                         0.0"/>
+
+  <xacro:sick_s300
+    name="front_bottom_lidar"
+    prefix="${robot_prefix}"
+    parent_frame="${robot_prefix}${base_name}_link"
+    use_visual="${front_bottom_lidar_use_visual}"
+    use_collision="${front_bottom_lidar_use_collision}"
+    use_inertial="${front_bottom_lidar_use_inertial}"
+    use_v_mesh="${front_bottom_lidar_use_v_mesh}"
+    v_mesh_use_low_res="${front_bottom_lidar_v_mesh_use_low_res}"
+    color="${front_bottom_lidar_color}"
+    use_c_mesh="${front_bottom_lidar_use_c_mesh}"
+    c_mesh_use_low_res="${front_bottom_lidar_c_mesh_use_low_res}"
+    joint_parent_fr_root_fr="${front_bottom_lidar_joint_parent_fr_root_fr}"
+    sim_enabled="${front_bottom_lidar_sim_enabled}"
+    sim_always_on="${front_bottom_lidar_sim_always_on}"
+    sim_visualize="${front_bottom_lidar_sim_visualize}"
+    sim_update_rate="${front_bottom_lidar_sim_update_rate}"
+    sim_hor_fov_deg="${front_bottom_lidar_sim_hor_fov_deg}"
+    sim_hor_res_deg="${front_bottom_lidar_sim_hor_res_deg}"
+    sim_dist_span="${front_bottom_lidar_sim_dist_span}"
+    sim_gaussian_noise="${front_bottom_lidar_sim_gaussian_noise}"
+    namespace="${robot_namespace}"
+    sim_topic="${front_bottom_lidar_sim_topic}"/>
+
+  <!-- ===================================================================== -->
+  <!-- BACK TOP LIVOX MID-360 -->
+  <!-- ===================================================================== -->
+
+  <xacro:property name="back_top_lidar_use_visual"         value="$(arg back_top_lidar_use_visual)"/>
+  <xacro:property name="back_top_lidar_use_collision"      value="$(arg back_top_lidar_use_collision)"/>
+  <xacro:property name="back_top_lidar_use_inertial"       value="$(arg back_top_lidar_use_inertial)"/>
+  <xacro:property name="back_top_lidar_use_v_mesh"         value="$(arg back_top_lidar_use_v_mesh)"/>
+  <xacro:property name="back_top_lidar_v_mesh_use_low_res" value="$(arg back_top_lidar_v_mesh_use_low_res)"/>
+  <xacro:property name="back_top_lidar_color"              value="$(arg back_top_lidar_color)"/>
+  <xacro:property name="back_top_lidar_use_c_mesh"         value="$(arg back_top_lidar_use_c_mesh)"/>
+  <xacro:property name="back_top_lidar_c_mesh_use_low_res" value="$(arg back_top_lidar_c_mesh_use_low_res)"/>
+  <xacro:property name="back_top_lidar_sim_cfg"            value="${sim_cfg.get('back_top_lidar', dict())}"/>
+
+  <!--
+  back_top_lidar_sim_cfg contains the simulation configuration for the Livox Mid-360 lidar plugin.
+  -->
+  <xacro:set_props_plugin_lidar_3d_ring prop_prefix="back_top_lidar_sim"
+                                        sim_cfg="${back_top_lidar_sim_cfg}"/>
+
+  <xacro:property name="back_top_lidar_joint_parent_fr_root_fr"
+                  value="-0.4844 0.0 0.1217 0.0 ${pi / 6.0} ${pi}"/>
+
+  <xacro:livox_mid360
+      name="back_top_lidar"
+      prefix="${robot_prefix}"
+      parent_frame="${robot_prefix}basket_root_link"
+      use_visual="${back_top_lidar_use_visual}"
+      use_collision="${back_top_lidar_use_collision}"
+      use_inertial="${back_top_lidar_use_inertial}"
+      use_v_mesh="${back_top_lidar_use_v_mesh}"
+      v_mesh_use_low_res="${back_top_lidar_v_mesh_use_low_res}"
+      color="${back_top_lidar_color}"
+      use_c_mesh="${back_top_lidar_use_c_mesh}"
+      c_mesh_use_low_res="${back_top_lidar_c_mesh_use_low_res}"
+      joint_parent_fr_root_fr="${back_top_lidar_joint_parent_fr_root_fr}"
+      sim_enabled="${back_top_lidar_sim_enabled}"
+      sim_always_on="${back_top_lidar_sim_always_on}"
+      sim_visualize="${back_top_lidar_sim_visualize}"
+      sim_update_rate="${back_top_lidar_sim_update_rate}"
+      sim_hor_fov_deg="${back_top_lidar_sim_hor_fov_deg}"
+      sim_hor_res_deg="${back_top_lidar_sim_hor_res_deg}"
+      sim_ver_fov_deg="${back_top_lidar_sim_ver_fov_deg}"
+      sim_ver_res_deg="${back_top_lidar_sim_ver_res_deg}"
+      sim_dist_span="${back_top_lidar_sim_dist_span}"
+      sim_dist_res="${back_top_lidar_sim_dist_res}"
+      sim_gaussian_noise="${back_top_lidar_sim_gaussian_noise}"
+      namespace="${robot_namespace}"
+      sim_base_topic="${back_top_lidar_sim_base_topic}"/>
+
+  <xacro:if value="${sim_file != ''}">
+    <gazebo>
+      <!--
+      Define a 'JointPositionController' Gazebo plugin for the fork mockup prismatic joint.
+      The velocity-command controller receives a target position and moves toward it at vel_max.
+      -->
+      <xacro:property name="fork_controller_sim_cfg"
+                      value="${sim_cfg.get('fork_controller', dict())}"/>
+
+      <xacro:if value="${fork_controller_sim_cfg.get('enabled', False)}">
+        <xacro:property name="fork_topic" value="${fork_controller_sim_cfg.get('topic', '')}"/>
+
+        <xacro:if value="${fork_topic == ''}">
+          ${xacro.fatal("fork_controller.topic is required when fork_controller.enabled is true.")}
+        </xacro:if>
+
+        <xacro:if value="${fork_topic != ''}">
+          <xacro:plugin_fork_joint_f64_pos_velcmd
+            joint_name="${robot_prefix}fork_root_joint"
+            joint_limits="${fork_limits}"
+            vel_max="${fork_controller_sim_cfg.get('vel_max', '')}"
+            initial_position="${fork_controller_sim_cfg.get('initial_position', '')}"
+            namespace="${robot_namespace}"
+            topic="${fork_topic}"/>
+        </xacro:if>
+      </xacro:if>
+    </gazebo>
+  </xacro:if>
+
+  <!--
+  The fork module creates the fork itself and the sensors mounted on it or above the body.
+  This model file only adds the Gazebo joint state publisher for the full assembled robot.
+  -->
+  <xacro:if value="${sim_file != ''}">
+    <gazebo>
+      <xacro:property name="joint_state_publisher_sim_cfg"
+                      value="${sim_cfg.get('joint_state_publisher', dict())}"/>
+
+      <xacro:if value="${joint_state_publisher_sim_cfg.get('enabled', False)}">
+        <xacro:property name="js_topic" value="${joint_state_publisher_sim_cfg.get('topic', '')}"/>
+
+        <xacro:if value="${js_topic == ''}">
+          ${xacro.fatal(
+            "joint_state_publisher.topic is required when joint_state_publisher.enabled is true.")}
+        </xacro:if>
+
+        <xacro:if value="${js_topic != ''}">
+          <xacro:resolve_topic prop_id="resolved_js_topic"
+                               topic="${js_topic}"
+                               namespace="${robot_namespace}"/>
+
+          <xacro:plugin_joint_state_publisher topic="${resolved_js_topic}">
+            <joint_names>
+              <joint_name>${robot_prefix}fork_root_joint</joint_name>
+              <joint_name>${robot_prefix}${front_left_wheel_name}_steering_joint</joint_name>
+              <joint_name>${robot_prefix}${front_left_wheel_name}_rotation_joint</joint_name>
+              <joint_name>${robot_prefix}${front_right_wheel_name}_steering_joint</joint_name>
+              <joint_name>${robot_prefix}${front_right_wheel_name}_rotation_joint</joint_name>
+              <joint_name>${robot_prefix}${rear_left_wheel_name}_steering_joint</joint_name>
+              <joint_name>${robot_prefix}${rear_left_wheel_name}_rotation_joint</joint_name>
+              <joint_name>${robot_prefix}${rear_right_wheel_name}_steering_joint</joint_name>
+              <joint_name>${robot_prefix}${rear_right_wheel_name}_rotation_joint</joint_name>
+            </joint_names>
+          </xacro:plugin_joint_state_publisher>
+        </xacro:if>
+      </xacro:if>
+    </gazebo>
+  </xacro:if>
+</robot>
