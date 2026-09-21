@@ -289,6 +289,11 @@
   <xacro:set_props_plugin_lidar_3d_ring prop_prefix="front_top_lidar_sim"
                                         sim_cfg="${front_top_lidar_sim_cfg}"/>
 
+  <xacro:property name="front_top_lidar_imu_sim_cfg"
+                  value="${sim_cfg.get('front_top_lidar_imu', dict())}"/>
+  <xacro:set_props_plugin_imu prop_prefix="front_top_lidar_imu_sim"
+                              imu_sim_cfg="${front_top_lidar_imu_sim_cfg}"/>
+
   <!-- The top Livox Mid-360 poses are expressed relative to the basket link. -->
   <xacro:property name="front_top_lidar_joint_parent_fr_root_fr"
                   value="0.4882 0.0 0.1952 0.0 ${pi / 6.0} 0.0"/>
@@ -317,8 +322,20 @@
       sim_dist_span="${front_top_lidar_sim_dist_span}"
       sim_dist_res="${front_top_lidar_sim_dist_res}"
       sim_gaussian_noise="${front_top_lidar_sim_gaussian_noise}"
+      sim_imu_enabled="${front_top_lidar_imu_sim_enabled}"
+      sim_imu_use_gravity="${front_top_lidar_imu_sim_use_gravity}"
+      sim_imu_always_on="${front_top_lidar_imu_sim_always_on}"
+      sim_imu_update_rate="${front_top_lidar_imu_sim_update_rate}"
+      sim_imu_ang_vel_gaussian_noise="${front_top_lidar_imu_sim_ang_vel_gaussian_noise}"
+      sim_imu_ang_vel_gaussian_noise_bias="${front_top_lidar_imu_sim_ang_vel_gaussian_noise_bias}"
+      sim_imu_ang_vel_gaussian_noise_dynamic_bias="${front_top_lidar_imu_sim_ang_vel_gaussian_noise_dynamic_bias}"
+      sim_imu_lin_acc_gaussian_noise="${front_top_lidar_imu_sim_lin_acc_gaussian_noise}"
+      sim_imu_lin_acc_gaussian_noise_bias="${front_top_lidar_imu_sim_lin_acc_gaussian_noise_bias}"
+      sim_imu_lin_acc_gaussian_noise_dynamic_bias="${front_top_lidar_imu_sim_lin_acc_gaussian_noise_dynamic_bias}"
+      sim_imu_use_orientation="${front_top_lidar_imu_sim_use_orientation}"
       namespace="${robot_namespace}"
-      sim_base_topic="${front_top_lidar_sim_base_topic}"/>
+      sim_base_topic="${front_top_lidar_sim_base_topic}"
+      sim_imu_topic="${front_top_lidar_imu_sim_topic}"/>
 
   <!-- ===================================================================== -->
   <!-- FRONT BOTTOM SICK S300 -->
@@ -394,6 +411,11 @@
   <xacro:set_props_plugin_lidar_3d_ring prop_prefix="back_top_lidar_sim"
                                         sim_cfg="${back_top_lidar_sim_cfg}"/>
 
+  <xacro:property name="back_top_lidar_imu_sim_cfg"
+                  value="${sim_cfg.get('back_top_lidar_imu', dict())}"/>
+  <xacro:set_props_plugin_imu prop_prefix="back_top_lidar_imu_sim"
+                              imu_sim_cfg="${back_top_lidar_imu_sim_cfg}"/>
+
   <xacro:property name="back_top_lidar_joint_parent_fr_root_fr"
                   value="-0.4844 0.0 0.1217 0.0 ${pi / 6.0} ${pi}"/>
 
@@ -421,8 +443,20 @@
       sim_dist_span="${back_top_lidar_sim_dist_span}"
       sim_dist_res="${back_top_lidar_sim_dist_res}"
       sim_gaussian_noise="${back_top_lidar_sim_gaussian_noise}"
+      sim_imu_enabled="${back_top_lidar_imu_sim_enabled}"
+      sim_imu_use_gravity="${back_top_lidar_imu_sim_use_gravity}"
+      sim_imu_always_on="${back_top_lidar_imu_sim_always_on}"
+      sim_imu_update_rate="${back_top_lidar_imu_sim_update_rate}"
+      sim_imu_ang_vel_gaussian_noise="${back_top_lidar_imu_sim_ang_vel_gaussian_noise}"
+      sim_imu_ang_vel_gaussian_noise_bias="${back_top_lidar_imu_sim_ang_vel_gaussian_noise_bias}"
+      sim_imu_ang_vel_gaussian_noise_dynamic_bias="${back_top_lidar_imu_sim_ang_vel_gaussian_noise_dynamic_bias}"
+      sim_imu_lin_acc_gaussian_noise="${back_top_lidar_imu_sim_lin_acc_gaussian_noise}"
+      sim_imu_lin_acc_gaussian_noise_bias="${back_top_lidar_imu_sim_lin_acc_gaussian_noise_bias}"
+      sim_imu_lin_acc_gaussian_noise_dynamic_bias="${back_top_lidar_imu_sim_lin_acc_gaussian_noise_dynamic_bias}"
+      sim_imu_use_orientation="${back_top_lidar_imu_sim_use_orientation}"
       namespace="${robot_namespace}"
-      sim_base_topic="${back_top_lidar_sim_base_topic}"/>
+      sim_base_topic="${back_top_lidar_sim_base_topic}"
+      sim_imu_topic="${back_top_lidar_imu_sim_topic}"/>
 
   <xacro:if value="${sim_file != ''}">
     <gazebo>

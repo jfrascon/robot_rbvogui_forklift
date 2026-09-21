@@ -378,7 +378,7 @@ fork_camera_infra2:
   trigger_topic: fork_camera/infra2/trigger
 
 ################################################################################
-# Front top LiDAR is a Robosense Airy with integrated IMU.
+# Front top LiDAR is a Livox Mid-360 with an integrated IMU.
 ################################################################################
 # Configuration for the `gpu_lidar` Gazebo plugin.
 front_top_lidar:
@@ -464,7 +464,7 @@ front_bottom_lidar:
   topic: front_bottom_lidar/scan
 
 ################################################################################
-# Back top LiDAR is a Robosense Airy with integrated IMU.
+# Back top LiDAR is a Livox Mid-360 with an integrated IMU.
 ################################################################################
 # Configuration for the `gpu_lidar` Gazebo plugin.
 back_top_lidar:
