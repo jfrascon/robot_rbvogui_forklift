@@ -119,7 +119,6 @@ def generate_launch_description() -> LaunchDescription:
             choices=['True', 'true', 'False', 'false'],
             description='Launch the Gazebo graphical client.',
         ),
-        rlh.RequireFile(path=LaunchConfiguration('robot_params_file')),
         rlh.RequireFile(path=LaunchConfiguration('robot_sim_file')),
         rlh.RequireFile(path=LaunchConfiguration('robot_bridge_config_file')),
         rlh.SetRobotNamespace(
@@ -130,15 +129,10 @@ def generate_launch_description() -> LaunchDescription:
         rlh.SetRobotPrefix(
             robot_name=LaunchConfiguration('robot_name'), output_context_key='robot_prefix'
         ),
-        # Keep the original path when substitutions are disabled.
-        SetLaunchConfiguration(
-            'resolved_robot_params_file', LaunchConfiguration('robot_params_file')
-        ),
-        # When enabled, render once and replace the shared path before any child launch starts.
-        rlh.RenderParamsFile(
+        rlh.ProcessParamsFile(
             params_file=LaunchConfiguration('robot_params_file'),
+            allow_substs=LaunchConfiguration('robot_params_file_allow_substs'),
             output_context_key='resolved_robot_params_file',
-            condition=IfCondition(LaunchConfiguration('robot_params_file_allow_substs')),
         ),
         OpaqueFunction(function=_set_robot_urdf_file),
         _include_render_robot_urdf(),
