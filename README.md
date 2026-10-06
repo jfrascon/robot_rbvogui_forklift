@@ -1,14 +1,14 @@
 # robot_rbvogui_forklift
 
-`robot_rbvogui_forklift` is an RB-VOGUI robot model with a fork and sensors. Start with the [robot_rbvogui_common README](../robot_rbvogui_common/README.md). It explains the mobile base and shared resources used here. This package adds the fork and sensor layout to that base.
+`robot_rbvogui_forklift` is an RB-VOGUI robot model with a fork and sensors. Start with the [robot_rbvogui_base README](../robot_rbvogui_base/README.md). It explains the mobile base and shared resources used here. This package adds the fork and sensor layout to that base.
 
 ![RB-VOGUI forklift model](doc/images/robot_rbvogui_forklift.png)
 
 ## Resources
 
-### Forklift model `urdf/model_forklift.xacro`
+### Forklift model `urdf/robot_rbvogui_forklift.xacro`
 
-[`model_forklift.xacro`](urdf/model_forklift.xacro) is the Xacro entry point for the complete forklift model. It includes `robot_rbvogui_common/urdf/common.xacro` and adds the basket, fork, two Livox Mid-360 3D lidars, and a front-bottom 2D lidar.
+[`robot_rbvogui_forklift.xacro`](urdf/robot_rbvogui_forklift.xacro) is the Xacro entry point for the complete forklift model. It includes `robot_rbvogui_base/urdf/common.xacro` and adds the basket, fork, two Livox Mid-360 3D lidars, and a front-bottom 2D lidar.
 
 This package provides its own default configuration files. They are examples and guides that you can copy and adapt when creating another forklift variant.
 
@@ -17,9 +17,9 @@ This package provides its own default configuration files. They are examples and
 - [`config/default_bridge.yaml`](config/default_bridge.yaml) defines the ROS 2 and Gazebo topics used by the base, the fork, and the sensors.
 - [`config/default_params.yaml`](config/default_params.yaml) configures the nodes launched for the model, including the bridge, kinematics, and fork control.
 
-### Reused resources from `robot_rbvogui_common`
+### Reused resources from `robot_rbvogui_base`
 
-The forklift model reuses the following resources from `robot_rbvogui_common`.
+The forklift model reuses the following resources from `robot_rbvogui_base`.
 
 - The mobile base defined by `urdf/common.xacro`, including its chassis, battery, wheels, frames, and common Gazebo plugins.
 - Common meshes, including the base meshes and the basket meshes used by this model.
@@ -31,7 +31,7 @@ The forklift package provides its own RViz configuration because its sensors dif
 
 ## Installation
 
-`robot_rbvogui_forklift` depends on ROS 2 packages available from the APT package repositories. Install those dependencies with `rosdep`. It also depends on packages that are not available from APT. Their source repositories are listed in [`deps.repos`](deps.repos), including `robot_rbvogui_common`.
+`robot_rbvogui_forklift` depends on ROS 2 packages available from the APT package repositories. Install those dependencies with `rosdep`. It also depends on packages that are not available from APT. Their source repositories are listed in [`deps.repos`](deps.repos), including `robot_rbvogui_base`.
 
 ```bash
 export WORKSPACE=<path-to-your-workspace>
@@ -48,7 +48,7 @@ Build the common package and the forklift package from the workspace root.
 
 ```bash
 cd "${WORKSPACE}"
-colcon build --merge-install --packages-select robot_rbvogui_common robot_rbvogui_forklift
+colcon build --merge-install --packages-select robot_rbvogui_base robot_rbvogui_forklift
 source install/setup.bash
 ```
 
@@ -60,20 +60,20 @@ The debug launch file is useful for quickly checking that the model still works 
 
 ```bash
 robot_rbvogui_forklift_share="$(ros2 pkg prefix robot_rbvogui_forklift)/share/robot_rbvogui_forklift"
-"${robot_rbvogui_forklift_share}/scripts/debug_model_forklift.sh"
+"${robot_rbvogui_forklift_share}/scripts/debug_robot_rbvogui_forklift.sh"
 ```
 
-You can pass the script any argument accepted by `debug_model_forklift.launch.py`. To see the available arguments, run:
+You can pass the script any argument accepted by `debug_robot_rbvogui_forklift.launch.py`. To see the available arguments, run:
 
 ```bash
-ros2 launch robot_rbvogui_forklift debug_model_forklift.launch.py --show-args
+ros2 launch robot_rbvogui_forklift debug_robot_rbvogui_forklift.launch.py --show-args
 ```
 
 For example, run the simulation without the Gazebo GUI or RViz:
 
 ```bash
 robot_rbvogui_forklift_share="$(ros2 pkg prefix robot_rbvogui_forklift)/share/robot_rbvogui_forklift"
-"${robot_rbvogui_forklift_share}/scripts/debug_model_forklift.sh" \
+"${robot_rbvogui_forklift_share}/scripts/debug_robot_rbvogui_forklift.sh" \
   rviz_enabled:=False \
   gzgui_enabled:=False
 ```
@@ -88,8 +88,8 @@ Build and run the common and forklift package tests from the workspace root.
 
 ```bash
 cd "${WORKSPACE}"
-colcon build --merge-install --packages-select robot_rbvogui_common robot_rbvogui_forklift
-colcon test --merge-install --packages-select robot_rbvogui_common robot_rbvogui_forklift
+colcon build --merge-install --packages-select robot_rbvogui_base robot_rbvogui_forklift
+colcon test --merge-install --packages-select robot_rbvogui_base robot_rbvogui_forklift
 colcon test-result --test-result-base build --verbose
 ```
 
@@ -99,9 +99,9 @@ You can also render the forklift model and validate the resulting URDF directly 
 
 ```bash
 robot_rbvogui_forklift_share="$(ros2 pkg prefix robot_rbvogui_forklift)/share/robot_rbvogui_forklift"
-ros2 launch robot_rbvogui_common render_robot_urdf.launch.py \
+ros2 launch robot_rbvogui_base render_robot_urdf.launch.py \
   robot_name:=rbv0 \
-  robot_xacro_file:="${robot_rbvogui_forklift_share}/urdf/model_forklift.xacro" \
+  robot_xacro_file:="${robot_rbvogui_forklift_share}/urdf/robot_rbvogui_forklift.xacro" \
   robot_xacro_args_file:="${robot_rbvogui_forklift_share}/config/default_xacro_args.yaml" \
   robot_sim_file:="${robot_rbvogui_forklift_share}/config/default_simulation.yaml" \
   robot_urdf_file:=/tmp/rbvogui_forklift.urdf
@@ -110,4 +110,4 @@ check_urdf /tmp/rbvogui_forklift.urdf
 
 ## Parent model
 
-This package builds on [robot_rbvogui_common](https://github.com/jfrascon/ros2_launch_helpers.git).
+This package builds on [robot_rbvogui_base](https://github.com/jfrascon/robot_rbvogui_base.git).

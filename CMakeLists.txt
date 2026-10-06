@@ -9,7 +9,7 @@ install(
   PATTERN "*.pyc" EXCLUDE)
 
 install(
-  PROGRAMS scripts/debug_model_forklift.sh
+  PROGRAMS scripts/debug_robot_rbvogui_forklift.sh
   DESTINATION share/${PROJECT_NAME}/scripts)
 
 install(FILES README.md LICENSE DESTINATION share/${PROJECT_NAME})

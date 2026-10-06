@@ -6,7 +6,7 @@ from conftest import run_bash
 
 def test_forklift_xacro_expands_to_valid_urdf(tmp_path: Path) -> None:
     urdf_path = tmp_path / 'forklift.urdf'
-    xacro_path = PACKAGE_DIR / 'urdf' / 'model_forklift.xacro'
+    xacro_path = PACKAGE_DIR / 'urdf' / 'robot_rbvogui_forklift.xacro'
 
     result = run_bash(f'xacro "{xacro_path}" > "{urdf_path}" && check_urdf "{urdf_path}"')
     output = result.stdout + result.stderr
@@ -21,7 +21,7 @@ def test_forklift_xacro_expands_to_valid_urdf(tmp_path: Path) -> None:
 
 def test_forklift_simulation_xacro_expands_to_valid_urdf(tmp_path: Path) -> None:
     urdf_path = tmp_path / 'forklift_simulation.urdf'
-    xacro_path = PACKAGE_DIR / 'urdf' / 'model_forklift.xacro'
+    xacro_path = PACKAGE_DIR / 'urdf' / 'robot_rbvogui_forklift.xacro'
     sim_path = PACKAGE_DIR / 'config' / 'default_simulation.yaml'
 
     result = run_bash(

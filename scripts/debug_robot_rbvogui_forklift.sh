@@ -6,8 +6,8 @@ package_share="$(ros2 pkg prefix robot_rbvogui_forklift)/share/robot_rbvogui_for
 # The launch arguments below are defaults passed explicitly by this script.
 # To override any of them, append the replacement argument after the script name.
 # Example:
-#   debug_model_forklift.sh rviz_enabled:=False gzgui_enabled:=False
-ros2 launch robot_rbvogui_forklift debug_model_forklift.launch.py \
+#   debug_robot_rbvogui_forklift.sh rviz_enabled:=False gzgui_enabled:=False
+ros2 launch robot_rbvogui_forklift debug_robot_rbvogui_forklift.launch.py \
     robot_name:=rbv0 \
     robot_params_file:="${package_share}/config/default_params.yaml" \
     robot_params_file_allow_substs:=True \

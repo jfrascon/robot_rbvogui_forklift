@@ -17,11 +17,11 @@
   <!-- INCLUDES -->
   <!-- ===================================================================== -->
 
-  <xacro:include filename="$(find robot_rbvogui_common)/urdf/common.xacro"/>
+  <xacro:include filename="$(find robot_rbvogui_base)/urdf/common.xacro"/>
 
   <!-- This module extends the common RB-VOGUI platform with the forklift and its sensor layout. -->
   <xacro:include filename="$(find robotics_description)/urdf/sensors/all_sensors_macro.xacro"/>
-  <xacro:include filename="$(find robot_rbvogui_common)/urdf/basket/basket_macros.xacro"/>
+  <xacro:include filename="$(find robot_rbvogui_base)/urdf/basket/basket_macros.xacro"/>
   <xacro:include filename="$(find robotics_description)/urdf/extras/forks/fork_mockup/fork_mockup_macro.xacro"/>
   <xacro:include filename="$(find robotics_description)/urdf/extras/forks/gz_plugins/plugin_fork_joint_f64_pos_velcmd_macro.xacro"/>
 

@@ -11,10 +11,10 @@ EXPECTED_RESOURCES = (
     'config/default_params.yaml',
     'config/default_simulation.yaml',
     'config/default_xacro_args.yaml',
-    'launch/debug_model_forklift.launch.py',
+    'launch/debug_robot_rbvogui_forklift.launch.py',
     'rviz/sim_debug.rviz',
-    'scripts/debug_model_forklift.sh',
-    'urdf/model_forklift.xacro',
+    'scripts/debug_robot_rbvogui_forklift.sh',
+    'urdf/robot_rbvogui_forklift.xacro',
 )
 
 REMOVED_RESOURCES = ('launch/debug_model_base.launch.py', 'scripts/debug_model_base.sh')
@@ -35,6 +35,6 @@ def test_removed_resource_is_not_installed(package_share: Path, relative_path: s
     assert not package_share.joinpath(relative_path).exists()
 
 
-@pytest.mark.parametrize('relative_path', ['scripts/debug_model_forklift.sh'])
+@pytest.mark.parametrize('relative_path', ['scripts/debug_robot_rbvogui_forklift.sh'])
 def test_installed_debug_script_is_executable(package_share: Path, relative_path: str) -> None:
     assert os.access(package_share / relative_path, os.X_OK)

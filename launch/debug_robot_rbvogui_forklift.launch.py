@@ -248,14 +248,18 @@ def _include_render_robot_urdf() -> IncludeLaunchDescription:
     return IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             PathJoinSubstitution(
-                [FindPackageShare('robot_rbvogui_common'), 'launch', 'render_robot_urdf.launch.py']
+                [FindPackageShare('robot_rbvogui_base'), 'launch', 'render_robot_urdf.launch.py']
             )
         ),
         launch_arguments={
             'namespace': LaunchConfiguration('namespace'),
             'robot_name': LaunchConfiguration('robot_name'),
             'robot_xacro_file': PathJoinSubstitution(
-                [FindPackageShare('robot_rbvogui_forklift'), 'urdf', 'model_forklift.xacro']
+                [
+                    FindPackageShare('robot_rbvogui_forklift'),
+                    'urdf',
+                    'robot_rbvogui_forklift.xacro',
+                ]
             ),
             'robot_xacro_args_file': LaunchConfiguration('robot_xacro_args_file'),
             'robot_sim_file': LaunchConfiguration('robot_sim_file'),
@@ -281,11 +285,11 @@ def _include_spawn_world() -> IncludeLaunchDescription:
             'gzgui_enabled': LaunchConfiguration('gzgui_enabled'),
             'gzgui_config_file': '',
             'world_sdf_file': PathJoinSubstitution(
-                [FindPackageShare('robot_rbvogui_common'), 'worlds', 'debug_world.sdf']
+                [FindPackageShare('robot_rbvogui_base'), 'worlds', 'debug_world.sdf']
             ),
             'world_sdf_string': '',
             'world_bridge_config_file': PathJoinSubstitution(
-                [FindPackageShare('robot_rbvogui_common'), 'worlds', 'debug_world_bridge.yaml']
+                [FindPackageShare('robot_rbvogui_base'), 'worlds', 'debug_world_bridge.yaml']
             ),
             'world_bridge_name': 'world_bridge',
             'world_bridge_subscription_heartbeat': '1000',
@@ -304,7 +308,7 @@ def _include_robot_state_publisher() -> IncludeLaunchDescription:
         PythonLaunchDescriptionSource(
             PathJoinSubstitution(
                 [
-                    FindPackageShare('robot_rbvogui_common'),
+                    FindPackageShare('robot_rbvogui_base'),
                     'launch',
                     'robot_state_publisher.launch.py',
                 ]
@@ -345,7 +349,7 @@ def _include_bridge() -> IncludeLaunchDescription:
     return IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             PathJoinSubstitution(
-                [FindPackageShare('robot_rbvogui_common'), 'launch', 'bridge.launch.py']
+                [FindPackageShare('robot_rbvogui_base'), 'launch', 'bridge.launch.py']
             )
         ),
         launch_arguments={
@@ -366,7 +370,7 @@ def _include_kinematics() -> IncludeLaunchDescription:
         PythonLaunchDescriptionSource(
             PathJoinSubstitution(
                 [
-                    FindPackageShare('robot_rbvogui_common'),
+                    FindPackageShare('robot_rbvogui_base'),
                     'launch',
                     'ground_vehicle_kinematics.launch.py',
                 ]
