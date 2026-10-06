@@ -44,16 +44,14 @@
   <xacro:arg name="front_top_lidar_use_c_mesh"         default="False"/>
   <xacro:arg name="front_top_lidar_c_mesh_use_low_res" default="True"/>
 
-  <!-- Arguments for the front bottom Sick S300 mounted on the robot's body -->
+  <!-- Arguments for the front bottom SICK microScan3 mounted on the robot's body. -->
   <xacro:arg name="front_bottom_lidar_use_visual"         default="True"/>
   <xacro:arg name="front_bottom_lidar_use_collision"      default="True"/>
   <xacro:arg name="front_bottom_lidar_use_inertial"       default="True"/>
   <xacro:arg name="front_bottom_lidar_use_v_mesh"         default="True"/>
-  <xacro:arg name="front_bottom_lidar_v_mesh_use_low_res" default="True"/>
-  <xacro:arg name="front_bottom_lidar_color"              default="0 0 0 1"/>
-  <!-- Use shape instead of mesh for collision by default. -->
-  <xacro:arg name="front_bottom_lidar_use_c_mesh"         default="False"/>
-  <xacro:arg name="front_bottom_lidar_c_mesh_use_low_res" default="True"/>
+  <xacro:arg name="front_bottom_lidar_color"              default=""/>
+  <!-- Use the microScan3 collision mesh by default. -->
+  <xacro:arg name="front_bottom_lidar_use_c_mesh"         default="True"/>
   <xacro:arg name="front_bottom_lidar_ground_clearance"   default="0.1"/>
 
   <!-- Arguments for the back top Livox Mid-360 mounted on the basket. -->
@@ -338,17 +336,15 @@
       sim_imu_topic="${front_top_lidar_imu_sim_topic}"/>
 
   <!-- ===================================================================== -->
-  <!-- FRONT BOTTOM SICK S300 -->
+  <!-- FRONT BOTTOM SICK MICROSCAN3 -->
   <!-- ===================================================================== -->
 
   <xacro:property name="front_bottom_lidar_use_visual"         value="$(arg front_bottom_lidar_use_visual)"/>
   <xacro:property name="front_bottom_lidar_use_collision"      value="$(arg front_bottom_lidar_use_collision)"/>
   <xacro:property name="front_bottom_lidar_use_inertial"       value="$(arg front_bottom_lidar_use_inertial)"/>
   <xacro:property name="front_bottom_lidar_use_v_mesh"         value="$(arg front_bottom_lidar_use_v_mesh)"/>
-  <xacro:property name="front_bottom_lidar_v_mesh_use_low_res" value="$(arg front_bottom_lidar_v_mesh_use_low_res)"/>
   <xacro:property name="front_bottom_lidar_color"              value="$(arg front_bottom_lidar_color)"/>
   <xacro:property name="front_bottom_lidar_use_c_mesh"         value="$(arg front_bottom_lidar_use_c_mesh)"/>
-  <xacro:property name="front_bottom_lidar_c_mesh_use_low_res" value="$(arg front_bottom_lidar_c_mesh_use_low_res)"/>
   <xacro:property name="front_bottom_lidar_ground_clearance"   value="$(arg front_bottom_lidar_ground_clearance)"/>
 
   <xacro:property name="front_bottom_lidar_sim_cfg"            value="${sim_cfg.get('front_bottom_lidar', dict())}"/>
@@ -356,8 +352,9 @@
   <xacro:set_props_plugin_lidar_2d prop_prefix="front_bottom_lidar_sim"
                                    sim_cfg="${front_bottom_lidar_sim_cfg}"/>
 
-  <xacro:property name="front_bottom_lidar_size_x" value="0.106"/>
-  <xacro:property name="front_bottom_lidar_size_z" value="0.152"/>
+  <!-- Match the microScan3 body dimensions to preserve front alignment and ground clearance. -->
+  <xacro:property name="front_bottom_lidar_size_x" value="0.1111"/>
+  <xacro:property name="front_bottom_lidar_size_z" value="0.1507"/>
 
   <xacro:property name="front_bottom_lidar_joint_parent_fr_root_fr"
                   value="${0.5 * (top_body_size_x - front_bottom_lidar_size_x)}
@@ -367,7 +364,7 @@
                          0.0
                          0.0"/>
 
-  <xacro:sick_s300
+  <xacro:sick_mics3_cbaz40pz1
     name="front_bottom_lidar"
     prefix="${robot_prefix}"
     parent_frame="${robot_prefix}${base_name}_link"
@@ -375,10 +372,8 @@
     use_collision="${front_bottom_lidar_use_collision}"
     use_inertial="${front_bottom_lidar_use_inertial}"
     use_v_mesh="${front_bottom_lidar_use_v_mesh}"
-    v_mesh_use_low_res="${front_bottom_lidar_v_mesh_use_low_res}"
     color="${front_bottom_lidar_color}"
     use_c_mesh="${front_bottom_lidar_use_c_mesh}"
-    c_mesh_use_low_res="${front_bottom_lidar_c_mesh_use_low_res}"
     joint_parent_fr_root_fr="${front_bottom_lidar_joint_parent_fr_root_fr}"
     sim_enabled="${front_bottom_lidar_sim_enabled}"
     sim_always_on="${front_bottom_lidar_sim_always_on}"

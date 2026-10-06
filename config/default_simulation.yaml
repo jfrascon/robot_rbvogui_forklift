@@ -449,7 +449,7 @@ front_top_lidar_imu:
   topic: front_top_lidar/imu/data # published
 
 ################################################################################
-# Front bottom LiDAR is a Sick S300.
+# Front bottom LiDAR is a SICK microScan3 MICS3-CBAZ40PZ1.
 ################################################################################
 front_bottom_lidar:
   enabled: true
@@ -457,9 +457,9 @@ front_bottom_lidar:
   always_on: true
   visualize: false
   update_rate: 25.0
-  hor_fov_deg: {"min_angle": -135, "max_angle": 135}
-  hor_res_deg: 0.5
-  dist_span: {"min_dist": 0.1, "max_dist": 30.0}   # m
+  hor_fov_deg: {"min_angle": -137.5, "max_angle": 137.5}
+  hor_res_deg: 0.39
+  dist_span: {"min_dist": 0.1, "max_dist": 40.0}   # m
   gaussian_noise: {"mean": 0, "stddev": 0.01}
   topic: front_bottom_lidar/scan
 

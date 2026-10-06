@@ -61,8 +61,6 @@ front_bottom_lidar_use_visual: true
 front_bottom_lidar_use_collision: true
 front_bottom_lidar_use_inertial: true
 front_bottom_lidar_use_v_mesh: true
-front_bottom_lidar_v_mesh_use_low_res: true
-front_bottom_lidar_color: "1 1 0 1"
-front_bottom_lidar_use_c_mesh: false
-front_bottom_lidar_c_mesh_use_low_res: true
+front_bottom_lidar_color: ""
+front_bottom_lidar_use_c_mesh: true
 front_bottom_lidar_ground_clearance: 0.1

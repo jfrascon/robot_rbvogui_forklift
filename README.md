@@ -8,7 +8,7 @@
 
 ### Forklift model `urdf/robot_rbvogui_forklift.xacro`
 
-[`robot_rbvogui_forklift.xacro`](urdf/robot_rbvogui_forklift.xacro) is the Xacro entry point for the complete forklift model. It includes `robot_rbvogui_base/urdf/common.xacro` and adds the basket, fork, two Livox Mid-360 3D lidars, and a front-bottom 2D lidar.
+[`robot_rbvogui_forklift.xacro`](urdf/robot_rbvogui_forklift.xacro) is the Xacro entry point for the complete forklift model. It includes `robot_rbvogui_base/urdf/common.xacro` and adds the basket, fork, two Livox Mid-360 3D lidars, and a front-bottom SICK microScan3 MICS3-CBAZ40PZ1 2D lidar.
 
 This package provides its own default configuration files. They are examples and guides that you can copy and adapt when creating another forklift variant.
 
