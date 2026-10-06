@@ -1,19 +1,19 @@
 repositories:
-    robot_rbvogui_common:
+    robot_rbvogui_base:
         type: git
         url: https://github.com/jfrascon/robot_rbvogui_common.git
-        version: d81f491e13ebd0996ac219c92fb5b9b66e792e36
+        version: d47aa0cb9f10f93aad5432125642d3c205d727ed
     joint_position_controller_server:
         type: git
         url: https://github.com/jfrascon/joint_position_controller_server.git
-        version: acf5f24b8621f74ff3a8848547db84068b8a7820
+        version: ebb4b09a1c44e10a15f9ca74ed37815f2b36fa95
     ros2_launch_helpers:
         type: git
         url: https://github.com/jfrascon/ros2_launch_helpers.git
-        version: 62b2b516888238bdf1c80d32f5a73c6c1459002d
+        version: 8b2741affd77b889e5dbcf38840712351f691c5a
         #exclude: [] # list of repos files inside repository_path to exclude (optional)
     ros_gz_tools:
         type: git
         url: git@gitlab.local.eurecat.org:robotics-automation/eut_ros_gz_tools.git
-        version: 1e26b58a32b368e5a467a37d5f4d0ec443de7b7d
+        version: a6c61a4ec847fbf75460205e349793141261ea11
         #exclude: [] # list of repos files inside repository_path to exclude (optional)
