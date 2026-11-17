@@ -2,13 +2,15 @@
 
 `robot_rbvogui_forklift` is an RB-VOGUI robot model with a fork and sensors. Start with the [robot_rbvogui_base README](../robot_rbvogui_base/README.md). It explains the mobile base and shared resources used here. This package adds the fork and sensor layout to that base.
 
-![RB-VOGUI forklift model](doc/images/robot_rbvogui_forklift.png)
+<img src="doc/images/robot_rbvogui_forklift.png" alt="RB-VOGUI forklift model" width="547">
 
 ## Resources
 
 ### Forklift model `urdf/robot_rbvogui_forklift.xacro`
 
-[`robot_rbvogui_forklift.xacro`](urdf/robot_rbvogui_forklift.xacro) is the Xacro entry point for the complete forklift model. It includes `robot_rbvogui_base/urdf/common.xacro` and adds the basket, fork, two Livox Mid-360 3D lidars, and a front-bottom SICK microScan3 MICS3-CBAZ40PZ1 2D lidar.
+[`robot_rbvogui_forklift.xacro`](urdf/robot_rbvogui_forklift.xacro) is the Xacro entry point for the complete forklift model. It includes `robot_rbvogui_base/urdf/common.xacro` and adds the basket, fork, a fork-mounted RealSense D435 camera, two Livox Mid-360 3D lidars, and a front-bottom SICK microScan3 MICS3-CBAZ40PZ1 2D lidar.
+
+The six `fork_rgbd_*` Xacro arguments configure the camera geometry and inertia. The defaults use the OBJ for visual geometry and the STL for collision geometry. Keep `fork_rgbd_color` empty to preserve the OBJ materials. The visual and collision mesh selectors are independent; set either selector to `False` to use a box for that element.
 
 This package provides its own default configuration files. They are examples and guides that you can copy and adapt when creating another forklift variant.
 
@@ -44,12 +46,23 @@ rosdep install --from-paths "${WORKSPACE}" --ignore-src -r -y
 
 ## Build
 
-Build the common package and the forklift package from the workspace root.
+Build the forklift package and its workspace dependencies from the workspace root.
 
 ```bash
 cd "${WORKSPACE}"
-colcon build --merge-install --packages-select robot_rbvogui_base robot_rbvogui_forklift
+colcon build --merge-install --packages-up-to robot_rbvogui_forklift
 source install/setup.bash
+```
+
+## Tests
+
+Build and run the tests for this package and its workspace dependencies from the workspace root.
+
+```bash
+cd "${WORKSPACE}"
+colcon build --merge-install --packages-up-to robot_rbvogui_forklift
+colcon test --merge-install --packages-up-to robot_rbvogui_forklift
+colcon test-result --test-result-base build --verbose
 ```
 
 ## Visualize the forklift model
@@ -59,8 +72,7 @@ The package includes a launch file and supporting resources to visualize the for
 The debug launch file is useful for quickly checking that the model still works after a change and for testing changes to the fork or sensors.
 
 ```bash
-robot_rbvogui_forklift_share="$(ros2 pkg prefix robot_rbvogui_forklift)/share/robot_rbvogui_forklift"
-"${robot_rbvogui_forklift_share}/scripts/debug_robot_rbvogui_forklift.sh"
+"${WORKSPACE}/robot_rbvogui_forklift/scripts/debug_robot_rbvogui_forklift.sh"
 ```
 
 You can pass the script any argument accepted by `debug_robot_rbvogui_forklift.launch.py`. To see the available arguments, run:
@@ -72,8 +84,7 @@ ros2 launch robot_rbvogui_forklift debug_robot_rbvogui_forklift.launch.py --show
 For example, run the simulation without the Gazebo GUI or RViz:
 
 ```bash
-robot_rbvogui_forklift_share="$(ros2 pkg prefix robot_rbvogui_forklift)/share/robot_rbvogui_forklift"
-"${robot_rbvogui_forklift_share}/scripts/debug_robot_rbvogui_forklift.sh" \
+"${WORKSPACE}/robot_rbvogui_forklift/scripts/debug_robot_rbvogui_forklift.sh" \
   rviz_enabled:=False \
   gzgui_enabled:=False
 ```
@@ -82,28 +93,16 @@ robot_rbvogui_forklift_share="$(ros2 pkg prefix robot_rbvogui_forklift)/share/ro
 
 > This image shows the forklift model simulation with the default values.
 
-## Tests
-
-Build and run the common and forklift package tests from the workspace root.
-
-```bash
-cd "${WORKSPACE}"
-colcon build --merge-install --packages-select robot_rbvogui_base robot_rbvogui_forklift
-colcon test --merge-install --packages-select robot_rbvogui_base robot_rbvogui_forklift
-colcon test-result --test-result-base build --verbose
-```
-
-### Inspect the generated URDF
+## Inspect the generated URDF
 
 You can also render the forklift model and validate the resulting URDF directly with `check_urdf`.
 
 ```bash
-robot_rbvogui_forklift_share="$(ros2 pkg prefix robot_rbvogui_forklift)/share/robot_rbvogui_forklift"
 ros2 launch robot_rbvogui_base render_robot_urdf.launch.py \
   robot_name:=rbv0 \
-  robot_xacro_file:="${robot_rbvogui_forklift_share}/urdf/robot_rbvogui_forklift.xacro" \
-  robot_xacro_args_file:="${robot_rbvogui_forklift_share}/config/default_xacro_args.yaml" \
-  robot_sim_file:="${robot_rbvogui_forklift_share}/config/default_simulation.yaml" \
+  robot_xacro_file:="${WORKSPACE}/robot_rbvogui_forklift/urdf/robot_rbvogui_forklift.xacro" \
+  robot_xacro_args_file:="${WORKSPACE}/robot_rbvogui_forklift/config/default_xacro_args.yaml" \
+  robot_sim_file:="${WORKSPACE}/robot_rbvogui_forklift/config/default_simulation.yaml" \
   robot_urdf_file:=/tmp/rbvogui_forklift.urdf
 check_urdf /tmp/rbvogui_forklift.urdf
 ```
