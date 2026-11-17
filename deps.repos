@@ -1,19 +1,21 @@
 repositories:
-    robot_rbvogui_base:
-        type: git
-        url: https://github.com/jfrascon/robot_rbvogui_common.git
-        version: d47aa0cb9f10f93aad5432125642d3c205d727ed
     joint_position_controller_server:
         type: git
         url: https://github.com/jfrascon/joint_position_controller_server.git
-        version: ebb4b09a1c44e10a15f9ca74ed37815f2b36fa95
+        version: b4c2414f96baf8d947f37d8f31294e3fe85429e3
+        #exclude: [] # list of repos files inside repository_path to exclude (optional)
+    robot_rbvogui_base:
+        type: git
+        url: https://github.com/jfrascon/robot_rbvogui_base.git
+        version: 07e0cda1f54596d39301f801a1f034f1bc61bf6c
+        #exclude: [] # list of repos files inside repository_path to exclude (optional)
     ros2_launch_helpers:
         type: git
         url: https://github.com/jfrascon/ros2_launch_helpers.git
-        version: 8b2741affd77b889e5dbcf38840712351f691c5a
+        version: 71aadced7f30ee4e79fc16458a2c6828fc76f07a
         #exclude: [] # list of repos files inside repository_path to exclude (optional)
     ros_gz_tools:
         type: git
         url: git@gitlab.local.eurecat.org:robotics-automation/eut_ros_gz_tools.git
-        version: a6c61a4ec847fbf75460205e349793141261ea11
+        version: 01ce54ec9d6d3e1953d1d343284afa25900aa77c
         #exclude: [] # list of repos files inside repository_path to exclude (optional)
